@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: parking-postgres
+    environment:
+      POSTGRES_DB: parking_db
+      POSTGRES_USER: parking_user
+      POSTGRES_PASSWORD: parking_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - parking-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: parking-sqlserver
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: YourStrong!Password
+      MSSQL_PID: Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - parking-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: parking-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@parking.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - parking-network
+
+  azure-data-studio:
+    image: chriseaton/azure-data-studio:latest
+    container_name: parking-azuredatastudio
+    environment:
+      DISPLAY: host.docker.internal:0
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    networks:
+      - parking-network
+
+volumes:
+  postgres_data:
+  sqlserver_data:
+
+networks:
+  parking-network:
+    driver: bridge
